@@ -337,9 +337,9 @@ class Referer {
             $this->cQueryString = '';
         } else {
             $this->cHost = $this->cUrlParam[host]; 
-            $urlquery = split('&', $this->cUrlParam[query]);
+            $urlquery = explode('&', $this->cUrlParam[query]);
             foreach($urlquery as $query) {
-                list($col, $val) = split('=', $query);
+                list($col, $val) = explode('=', $query);
                 $this->cUrlQuery[$col] = urldecode($val);
             }
             $this->decode();
