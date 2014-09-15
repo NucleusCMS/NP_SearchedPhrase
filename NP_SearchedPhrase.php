@@ -183,7 +183,7 @@ window.onload = SearchHighlight;
             }
 
             $res = sql_query('SELECT query_count FROM ' . sql_table('plugin_searched_phrase_count') . " WHERE item_id=$item_id AND cat_id=$cat_id AND query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
-            if (mysql_num_rows($res) != 0) {
+            if (sql_num_rows($res) != 0) {
                 sql_query("UPDATE " . sql_table('plugin_searched_phrase_count') . " SET query_count=query_count+1 WHERE item_id=$item_id AND cat_id=$cat_id AND query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
             } else {
                 sql_query("INSERT INTO " . sql_table('plugin_searched_phrase_count') . " (item_id, cat_id, query_phrase, query_count) VALUES ($itemid, $cat_id, '" . addslashes($pageReferer->cQueryString) . "', 1)");
@@ -191,7 +191,7 @@ window.onload = SearchHighlight;
 
             // adding total query count
             $res = sql_query('SELECT query_count FROM ' . sql_table('plugin_searched_phrase_total') . " WHERE query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
-            if (mysql_num_rows($res) != 0) {
+            if (sql_num_rows($res) != 0) {
                 sql_query("UPDATE " . sql_table('plugin_searched_phrase_total') . " SET query_count=query_count+1 WHERE query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
             } else {
                 sql_query("INSERT INTO " . sql_table('plugin_searched_phrase_total') . " (query_phrase, query_count) VALUES ('" . addslashes($pageReferer->cQueryString) . "', 1)");
@@ -239,7 +239,7 @@ window.onload = SearchHighlight;
         sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_total') .' ADD PRIMARY KEY (query_phrase)');
         sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_total') .' ADD INDEX (query_count)');
         $res = sql_query('SELECT query_count FROM ' . sql_table('plugin_searched_phrase_total'));
-        if (mysql_num_rows($res) == 0) {
+        if (sql_num_rows($res) == 0) {
             $res = sql_query('SELECT SUM(query_count) query_count, query_phrase FROM ' . sql_table('plugin_searched_phrase_count') . ' GROUP BY query_phrase');
             while ($row = mysql_fetch_array($res)) {
                 sql_query("INSERT INTO " . sql_table('plugin_searched_phrase_total') . " (query_phrase, query_count) VALUES ('" . addslashes($row["query_phrase"]) . "', " . $row["query_count"] . ")");
@@ -265,7 +265,7 @@ function rankList($t, $item, $cat, $rows, $disp_length) {
             $res = sql_query('SELECT query_phrase, query_count FROM ' . sql_table('plugin_searched_phrase_total') . " ORDER BY query_count DESC LIMIT 0, $rows");
         }
     }
-    if (mysql_num_rows($res)) {
+    if (sql_num_rows($res)) {
         $site_search_url = $t->getOption('SearchURL');
 
         $domains = $t->getOption('SiteSearchDomains');
@@ -306,7 +306,7 @@ function recentList($item, $cat, $rows, $disp_length) {
             $res = sql_query('SELECT query_phrase, item_id, ititle, host, engine, timestamp FROM ' . sql_table('plugin_searched_phrase_history') . ' LEFT JOIN ' . sql_table('item') . " ON item_id=inumber ORDER BY timestamp DESC LIMIT 0, $rows");
         }
     }
-    if (mysql_num_rows($res)) {
+    if (sql_num_rows($res)) {
         echo "<dl>\n";
         while($row = mysql_fetch_array($res, MYSQL_ASSOC)) {
             $query = $disp_length?shorten($row["query_phrase"], $disp_length, "..."):$row["query_phrase"];
