@@ -36,12 +36,6 @@
    Copyright (C) 2004 by HIGUCHI, Osamu - http://www.higuchi.com/
 */
 
-if (!function_exists('sql_table')) {
-    function sql_table($name) {
-        return 'nucleus_' . $name;
-    }
-}
-
 class NP_SearchedPhrase extends NucleusPlugin {
 
     function getName() {   return 'Searched Phrase';    }
