@@ -58,6 +58,7 @@ class NP_SearchedPhrase extends NucleusPlugin {
     }
 
     function supportsFeature($what) {return in_array($what,array('SqlTablePrefix','SqlApi'));}
+    function getMinNucleusVersion() {return '350';}
 
     function doSkinVar($skinType, $type = "query", $item="", $rows = 5, $disp_length = 0) {
         global $pageReferer, $itemid, $catid;
