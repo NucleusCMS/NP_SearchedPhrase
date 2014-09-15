@@ -177,26 +177,26 @@ window.onload = SearchHighlight;
 
         // Store query string from the search engine
         if ($pageReferer->cQueryString and $this->getOption('StoreQuery') == 'yes') {
-            mysql_query('INSERT INTO ' . sql_table('plugin_searched_phrase_history') . " (item_id, cat_id, query_phrase, host, engine, timestamp) VALUES ($item_id, $cat_id, '" . addslashes($pageReferer->cQueryString) . "', '" . addslashes($pageReferer->cHost) . "', '" . addslashes($pageReferer->cEngine) . "', " . mysqldate($b->getCorrectTime()) . ")");
+            sql_query('INSERT INTO ' . sql_table('plugin_searched_phrase_history') . " (item_id, cat_id, query_phrase, host, engine, timestamp) VALUES ($item_id, $cat_id, '" . addslashes($pageReferer->cQueryString) . "', '" . addslashes($pageReferer->cHost) . "', '" . addslashes($pageReferer->cEngine) . "', " . mysqldate($b->getCorrectTime()) . ")");
             if($life = intval($this->getOption('HistoryLife'))) { // once a day
-                mysql_query("DELETE FROM " . sql_table('plugin_searched_phrase_history') . " WHERE timestamp < date_sub('".  date('Y-m-d', $b->getCorrectTime()) . "', interval $life day)");
+                sql_query("DELETE FROM " . sql_table('plugin_searched_phrase_history') . " WHERE timestamp < date_sub('".  date('Y-m-d', $b->getCorrectTime()) . "', interval $life day)");
             }
 
-            $res = mysql_query('SELECT query_count FROM ' . sql_table('plugin_searched_phrase_count') . " WHERE item_id=$item_id AND cat_id=$cat_id AND query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
+            $res = sql_query('SELECT query_count FROM ' . sql_table('plugin_searched_phrase_count') . " WHERE item_id=$item_id AND cat_id=$cat_id AND query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
             if (mysql_num_rows($res) != 0) {
-                mysql_query("UPDATE " . sql_table('plugin_searched_phrase_count') . " SET query_count=query_count+1 WHERE item_id=$item_id AND cat_id=$cat_id AND query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
+                sql_query("UPDATE " . sql_table('plugin_searched_phrase_count') . " SET query_count=query_count+1 WHERE item_id=$item_id AND cat_id=$cat_id AND query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
             } else {
-                mysql_query("INSERT INTO " . sql_table('plugin_searched_phrase_count') . " (item_id, cat_id, query_phrase, query_count) VALUES ($itemid, $cat_id, '" . addslashes($pageReferer->cQueryString) . "', 1)");
+                sql_query("INSERT INTO " . sql_table('plugin_searched_phrase_count') . " (item_id, cat_id, query_phrase, query_count) VALUES ($itemid, $cat_id, '" . addslashes($pageReferer->cQueryString) . "', 1)");
             }
 
             // adding total query count
-            $res = mysql_query('SELECT query_count FROM ' . sql_table('plugin_searched_phrase_total') . " WHERE query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
+            $res = sql_query('SELECT query_count FROM ' . sql_table('plugin_searched_phrase_total') . " WHERE query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
             if (mysql_num_rows($res) != 0) {
-                mysql_query("UPDATE " . sql_table('plugin_searched_phrase_total') . " SET query_count=query_count+1 WHERE query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
+                sql_query("UPDATE " . sql_table('plugin_searched_phrase_total') . " SET query_count=query_count+1 WHERE query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
             } else {
-                mysql_query("INSERT INTO " . sql_table('plugin_searched_phrase_total') . " (query_phrase, query_count) VALUES ('" . addslashes($pageReferer->cQueryString) . "', 1)");
+                sql_query("INSERT INTO " . sql_table('plugin_searched_phrase_total') . " (query_phrase, query_count) VALUES ('" . addslashes($pageReferer->cQueryString) . "', 1)");
             }
-            mysql_query('COMMIT');
+            sql_query('COMMIT');
 
         }
     }
@@ -206,20 +206,20 @@ window.onload = SearchHighlight;
     function install() {
 
         // Create database tables
-        mysql_query('CREATE TABLE IF NOT EXISTS ' . sql_table('plugin_searched_phrase_history') .' (item_id INT(11) NOT NULL, query_phrase VARCHAR(200), host VARCHAR(30), engine VARCHAR(20), timestamp DATETIME NOT NULL)');
-        mysql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_history') .' ADD INDEX timestamp (timestamp)');
-        mysql_query('CREATE TABLE IF NOT EXISTS ' . sql_table('plugin_searched_phrase_count') .' (item_id INT(11) NOT NULL, query_phrase VARCHAR(200) NOT NULL, query_count INT(11) NOT NULL DEFAULT 1, PRIMARY KEY (item_id, query_phrase))');
+        sql_query('CREATE TABLE IF NOT EXISTS ' . sql_table('plugin_searched_phrase_history') .' (item_id INT(11) NOT NULL, query_phrase VARCHAR(200), host VARCHAR(30), engine VARCHAR(20), timestamp DATETIME NOT NULL)');
+        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_history') .' ADD INDEX timestamp (timestamp)');
+        sql_query('CREATE TABLE IF NOT EXISTS ' . sql_table('plugin_searched_phrase_count') .' (item_id INT(11) NOT NULL, query_phrase VARCHAR(200) NOT NULL, query_count INT(11) NOT NULL DEFAULT 1, PRIMARY KEY (item_id, query_phrase))');
 
-        mysql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' ADD (cat_id INT(11) NOT NULL DEFAULT 0)'); // from Version 1.0b7
-        mysql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' DROP PRIMARY KEY'); // from Version 1.0b7
-        mysql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' ADD UNIQUE u_key (cat_id, item_id, query_phrase)'); // from Version 1.0b7
-        mysql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' ADD INDEX query_count (query_count)');
-        mysql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' ADD INDEX item_id (item_id)');
-        mysql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' ADD INDEX cat_id (cat_id)'); //from Version 1.0b7
+        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' ADD (cat_id INT(11) NOT NULL DEFAULT 0)'); // from Version 1.0b7
+        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' DROP PRIMARY KEY'); // from Version 1.0b7
+        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' ADD UNIQUE u_key (cat_id, item_id, query_phrase)'); // from Version 1.0b7
+        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' ADD INDEX query_count (query_count)');
+        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' ADD INDEX item_id (item_id)');
+        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' ADD INDEX cat_id (cat_id)'); //from Version 1.0b7
 
-        mysql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_history') .' ADD (cat_id INT(11) NOT NULL DEFAULT 0)'); // from Version 1.0b7
-        mysql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_history') .' ADD INDEX item_id (item_id)');
-        mysql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_history') .' ADD INDEX cat_id (cat_id)'); //from Version 1.0b7
+        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_history') .' ADD (cat_id INT(11) NOT NULL DEFAULT 0)'); // from Version 1.0b7
+        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_history') .' ADD INDEX item_id (item_id)');
+        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_history') .' ADD INDEX cat_id (cat_id)'); //from Version 1.0b7
 
         // Options
         $this->createOption('StoreQuery', 'Store searched query phrase into the database', 'yesno', 'yes');
@@ -235,34 +235,34 @@ window.onload = SearchHighlight;
         $this->createOption('SiteSearchCof', 'Google SiteSearch "cof" option. Leave empty if none', 'textarea', '');
 
         // create total count table if from version prior to 1.0b7
-        mysql_query('CREATE TABLE IF NOT EXISTS ' . sql_table('plugin_searched_phrase_total') .' (query_count INT(11) NOT NULL DEFAULT 1, query_phrase VARCHAR(200) NOT NULL)');
-        mysql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_total') .' ADD PRIMARY KEY (query_phrase)');
-        mysql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_total') .' ADD INDEX (query_count)');
-        $res = mysql_query('SELECT query_count FROM ' . sql_table('plugin_searched_phrase_total'));
+        sql_query('CREATE TABLE IF NOT EXISTS ' . sql_table('plugin_searched_phrase_total') .' (query_count INT(11) NOT NULL DEFAULT 1, query_phrase VARCHAR(200) NOT NULL)');
+        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_total') .' ADD PRIMARY KEY (query_phrase)');
+        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_total') .' ADD INDEX (query_count)');
+        $res = sql_query('SELECT query_count FROM ' . sql_table('plugin_searched_phrase_total'));
         if (mysql_num_rows($res) == 0) {
-            $res = mysql_query('SELECT SUM(query_count) query_count, query_phrase FROM ' . sql_table('plugin_searched_phrase_count') . ' GROUP BY query_phrase');
+            $res = sql_query('SELECT SUM(query_count) query_count, query_phrase FROM ' . sql_table('plugin_searched_phrase_count') . ' GROUP BY query_phrase');
             while ($row = mysql_fetch_array($res)) {
-                mysql_query("INSERT INTO " . sql_table('plugin_searched_phrase_total') . " (query_phrase, query_count) VALUES ('" . addslashes($row["query_phrase"]) . "', " . $row["query_count"] . ")");
+                sql_query("INSERT INTO " . sql_table('plugin_searched_phrase_total') . " (query_phrase, query_count) VALUES ('" . addslashes($row["query_phrase"]) . "', " . $row["query_count"] . ")");
             }
         }
     }
 
     function unInstall() {
         // Comment out following lines if you want to keep search phrase data upon uninstall.
-//        mysql_query('DROP TABLE ' . sql_table('plugin_searched_phrase_history'));
-//        mysql_query('DROP TABLE ' . sql_table('plugin_searched_phrase_count'));
+//        sql_query('DROP TABLE ' . sql_table('plugin_searched_phrase_history'));
+//        sql_query('DROP TABLE ' . sql_table('plugin_searched_phrase_count'));
     }
 
 }
 
 function rankList($t, $item, $cat, $rows, $disp_length) {
     if (is_numeric($item) && $item) {
-        $res = mysql_query('SELECT query_phrase, query_count FROM ' . sql_table('plugin_searched_phrase_count') . " WHERE item_id=$item AND cat_id=0 ORDER BY query_count DESC LIMIT 0, $rows");
+        $res = sql_query('SELECT query_phrase, query_count FROM ' . sql_table('plugin_searched_phrase_count') . " WHERE item_id=$item AND cat_id=0 ORDER BY query_count DESC LIMIT 0, $rows");
     } else { // We're in an index page
         if (is_numeric($cat) && $cat) { // in a category index. displays queries in the category
-            $res = mysql_query('SELECT query_phrase, query_count FROM ' . sql_table('plugin_searched_phrase_count') . " WHERE item_id=0 AND cat_id=$cat ORDER BY query_count DESC LIMIT 0, $rows");
+            $res = sql_query('SELECT query_phrase, query_count FROM ' . sql_table('plugin_searched_phrase_count') . " WHERE item_id=0 AND cat_id=$cat ORDER BY query_count DESC LIMIT 0, $rows");
         } else { // in the main index. displays all queries
-            $res = mysql_query('SELECT query_phrase, query_count FROM ' . sql_table('plugin_searched_phrase_total') . " ORDER BY query_count DESC LIMIT 0, $rows");
+            $res = sql_query('SELECT query_phrase, query_count FROM ' . sql_table('plugin_searched_phrase_total') . " ORDER BY query_count DESC LIMIT 0, $rows");
         }
     }
     if (mysql_num_rows($res)) {
@@ -298,12 +298,12 @@ function rankList($t, $item, $cat, $rows, $disp_length) {
 
 function recentList($item, $cat, $rows, $disp_length) {
     if (is_numeric($item) && $item){ // We're in an item page
-        $res = mysql_query('SELECT query_phrase, host, engine, timestamp FROM ' . sql_table('plugin_searched_phrase_history') . " WHERE item_id=$item AND cat_id=0 ORDER BY timestamp DESC LIMIT 0, $rows");
+        $res = sql_query('SELECT query_phrase, host, engine, timestamp FROM ' . sql_table('plugin_searched_phrase_history') . " WHERE item_id=$item AND cat_id=0 ORDER BY timestamp DESC LIMIT 0, $rows");
     } else { // We're in an index page
         if (is_numeric($cat) && $cat) { // We're in a category index page
-            $res = mysql_query('SELECT query_phrase, item_id, ititle, host, engine, timestamp FROM ' . sql_table('plugin_searched_phrase_history') . ' LEFT JOIN ' . sql_table('item') . " ON item_id=inumber WHERE cat_id=$cat AND item_id=0 ORDER BY timestamp DESC LIMIT 0, $rows");
+            $res = sql_query('SELECT query_phrase, item_id, ititle, host, engine, timestamp FROM ' . sql_table('plugin_searched_phrase_history') . ' LEFT JOIN ' . sql_table('item') . " ON item_id=inumber WHERE cat_id=$cat AND item_id=0 ORDER BY timestamp DESC LIMIT 0, $rows");
         } else { // We're in the main index page
-            $res = mysql_query('SELECT query_phrase, item_id, ititle, host, engine, timestamp FROM ' . sql_table('plugin_searched_phrase_history') . ' LEFT JOIN ' . sql_table('item') . " ON item_id=inumber ORDER BY timestamp DESC LIMIT 0, $rows");
+            $res = sql_query('SELECT query_phrase, item_id, ititle, host, engine, timestamp FROM ' . sql_table('plugin_searched_phrase_history') . ' LEFT JOIN ' . sql_table('item') . " ON item_id=inumber ORDER BY timestamp DESC LIMIT 0, $rows");
         }
     }
     if (mysql_num_rows($res)) {
