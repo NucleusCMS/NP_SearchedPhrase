@@ -54,7 +54,7 @@ class NP_SearchedPhrase extends NucleusPlugin {
 
     function doTemplateVar(&$item) {
         global $pageReferer;
-        echo htmlspecialchars($pageReferer->cQueryString);
+        echo htmlspecialchars($pageReferer->cQueryString, ENT_QUOTES, _CHARSET);
     }
 
     function supportsFeature($what) {
@@ -79,10 +79,10 @@ class NP_SearchedPhrase extends NucleusPlugin {
                 recentList($item, $catid, $rows, $disp_length);
                 break;
             case 'host':
-                echo htmlspecialchars($pageReferer->cHost);
+                echo htmlspecialchars($pageReferer->cHost, ENT_QUOTES, _CHARSET);
                 break;
             case 'engine':
-                echo htmlspecialchars($pageReferer->cEngine);
+                echo htmlspecialchars($pageReferer->cEngine, ENT_QUOTES, _CHARSET);
                 break;
             case 'highlight':
                 if ($pageReferer->cQueryString) {
@@ -127,7 +127,7 @@ function highlightWord(node,word) {
 
 function SearchHighlight() {
     if (!document.createElement) return;
-    words = "<?php echo htmlspecialchars($pageReferer->cQueryString)?>".split(/\s+/);
+    words = "<?php echo htmlspecialchars($pageReferer->cQueryString, ENT_QUOTES, _CHARSET);?>".split(/\s+/);
     for (w=0;w<words.length;w++) {
         highlightWord(document.getElementsByTagName("body")[0],words[w]);
     }
@@ -143,7 +143,7 @@ window.onload = SearchHighlight;
                 break;
             case 'query':
             default:
-                echo htmlspecialchars($pageReferer->cQueryString);
+                echo htmlspecialchars($pageReferer->cQueryString, ENT_QUOTES, _CHARSET);
         }
     }
 
@@ -289,7 +289,7 @@ function rankList($t, $item, $cat, $rows, $disp_length) {
         echo "<ol>\n";
         while($row = mysql_fetch_array($res, MYSQL_ASSOC)) {
             $query = $disp_length?shorten($row["query_phrase"], $disp_length, "..."):$row["query_phrase"];
-            echo '<li><a href="' . $site_search_url . "?q=" . urlencode($row["query_phrase"]) . $site_search_options . '">' . htmlspecialchars($query) . "</a> (" . number_format($row["query_count"]) . ")</li>\n";
+            echo '<li><a href="' . $site_search_url . "?q=" . urlencode($row["query_phrase"]) . $site_search_options . '">' . htmlspecialchars($query, ENT_QUOTES, _CHARSET) . "</a> (" . number_format($row["query_count"]) . ")</li>\n";
             // echo '<li><a href="http://search.yahoo.co.jp/search?p=' . urlencode($row["query_phrase"] . " site:www.higuchi.com") . '">' . htmlspecialchars($query) . "</a> (" . number_format($row["query_count"]) . ")</li>\n";
         }
         echo "</ol>\n";
@@ -310,10 +310,10 @@ function recentList($item, $cat, $rows, $disp_length) {
         echo "<dl>\n";
         while($row = mysql_fetch_array($res, MYSQL_ASSOC)) {
             $query = $disp_length?shorten($row["query_phrase"], $disp_length, "..."):$row["query_phrase"];
-            echo "<dt>" . htmlspecialchars($query) . "</dt>\n";
+            echo "<dt>" . htmlspecialchars($query, ENT_QUOTES, _CHARSET) . "</dt>\n";
             if (!is_numeric($item) and $row["item_id"] != 0) {
                 $title = $disp_length?shorten($row["ititle"], $disp_length, "..."):$row["ititle"];
-                echo '<dd><a href="' . createItemLink($row["item_id"]) . '">' . htmlspecialchars($title) . "</a></dd>\n";
+                echo '<dd><a href="' . createItemLink($row["item_id"]) . '">' . htmlspecialchars($title, ENT_QUOTES, _CHARSET) . "</a></dd>\n";
             }
             echo '<dd><a href="http://' . $row["host"] . '/">' . $row["engine"] . '</a> - ' . strftime("%y/%m/%d %H:%M:%S", strtotime($row["timestamp"])) . "</dd>\n";
         }
