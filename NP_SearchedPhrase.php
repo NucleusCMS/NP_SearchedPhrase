@@ -241,7 +241,7 @@ window.onload = SearchHighlight;
         $res = sql_query('SELECT query_count FROM ' . sql_table('plugin_searched_phrase_total'));
         if (sql_num_rows($res) == 0) {
             $res = sql_query('SELECT SUM(query_count) query_count, query_phrase FROM ' . sql_table('plugin_searched_phrase_count') . ' GROUP BY query_phrase');
-            while ($row = mysql_fetch_array($res)) {
+            while ($row = sql_fetch_array($res)) {
                 sql_query("INSERT INTO " . sql_table('plugin_searched_phrase_total') . " (query_phrase, query_count) VALUES ('" . addslashes($row["query_phrase"]) . "', " . $row["query_count"] . ")");
             }
         }
@@ -287,7 +287,7 @@ function rankList($t, $item, $cat, $rows, $disp_length) {
             ($cof ? "&amp;cof=" . urlencode($cof) : "");
 
         echo "<ol>\n";
-        while($row = mysql_fetch_array($res, MYSQL_ASSOC)) {
+        while($row = sql_fetch_array($res, MYSQL_ASSOC)) {
             $query = $disp_length?shorten($row["query_phrase"], $disp_length, "..."):$row["query_phrase"];
             echo '<li><a href="' . $site_search_url . "?q=" . urlencode($row["query_phrase"]) . $site_search_options . '">' . htmlspecialchars($query, ENT_QUOTES, _CHARSET) . "</a> (" . number_format($row["query_count"]) . ")</li>\n";
             // echo '<li><a href="http://search.yahoo.co.jp/search?p=' . urlencode($row["query_phrase"] . " site:www.higuchi.com") . '">' . htmlspecialchars($query) . "</a> (" . number_format($row["query_count"]) . ")</li>\n";
@@ -308,7 +308,7 @@ function recentList($item, $cat, $rows, $disp_length) {
     }
     if (sql_num_rows($res)) {
         echo "<dl>\n";
-        while($row = mysql_fetch_array($res, MYSQL_ASSOC)) {
+        while($row = sql_fetch_array($res, MYSQL_ASSOC)) {
             $query = $disp_length?shorten($row["query_phrase"], $disp_length, "..."):$row["query_phrase"];
             echo "<dt>" . htmlspecialchars($query, ENT_QUOTES, _CHARSET) . "</dt>\n";
             if (!is_numeric($item) and $row["item_id"] != 0) {
