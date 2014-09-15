@@ -57,15 +57,7 @@ class NP_SearchedPhrase extends NucleusPlugin {
         echo htmlspecialchars($pageReferer->cQueryString, ENT_QUOTES, _CHARSET);
     }
 
-    function supportsFeature($what) {
-        switch($what) { 
-            case 'SqlTablePrefix': 
-                return 1; 
-            default: 
-                return 0; 
-    } 
-
-    }
+    function supportsFeature($what) {return in_array($what,array('SqlTablePrefix'));}
 
     function doSkinVar($skinType, $type = "query", $item="", $rows = 5, $disp_length = 0) {
         global $pageReferer, $itemid, $catid;
