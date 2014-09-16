@@ -31,7 +31,7 @@
         Added 'charset' parameter support for Excite
         Ignore referer from Google cache page
         Altered charset priority order for Nifty
-		Fixed '$this' issue in rankList()
+        Fixed '$this' issue in rankList()
 
    Copyright (C) 2004 by HIGUCHI, Osamu - http://www.higuchi.com/
 */
@@ -155,7 +155,8 @@ class NP_SearchedPhrase extends NucleusPlugin {
         }
     }
 
-    function getTableList() {   return array( sql_table('plugin_searched_phrase_history'), sql_table( 'plugin_searched_phrase_count'), sql_table( 'plugin_searched_phrase_total') ); }
+    function getTableList() {
+        return array( sql_table('plugin_searched_phrase_history'), sql_table( 'plugin_searched_phrase_count'), sql_table( 'plugin_searched_phrase_total') ); }
 
     function install() {
 
@@ -231,29 +232,37 @@ function rankList($t, $item, $cat, $rows, $disp_length) {
     if (sql_num_rows($res)) {
         $site_search_url = $t->getOption('SearchURL');
 
-        $domains = $t->getOption('SiteSearchDomains');
+        $domains    = $t->getOption('SiteSearchDomains');
         $sitesearch = $t->getOption('SiteSearchSitesearch');
-        $client = $t->getOption('SiteSearchClient');
-        $forid = $t->getOption('SiteSearchForid');
-        $ie = $t->getOption('SiteSearchIe');
-        $oe = $t->getOption('SiteSearchOe');
-        $hl = $t->getOption('SiteSearchHl');
-        $cof = $t->getOption('SiteSearchCof');
+        $client     = $t->getOption('SiteSearchClient');
+        $forid      = $t->getOption('SiteSearchForid');
+        $ie         = $t->getOption('SiteSearchIe');
+        $oe         = $t->getOption('SiteSearchOe');
+        $hl         = $t->getOption('SiteSearchHl');
+        $cof        = $t->getOption('SiteSearchCof');
 
-        $site_search_options = ($domains ? "&amp;domains=" . urlencode($domains) : "") .
-            ($sitesearch ? "&amp;sitesearch=" . urlencode($sitesearch) : "") .
-            ($client ? "&amp;client=$client" : "") .
-            ($forid ? "&amp;forid=$forid" : "") .
-            ($ie ? "&amp;ie=$ie" : "") .
-            ($oe ? "&amp;oe=$oe" : "") .
-            ($hl ? "&amp;hl=$hl" : "") .
-            ($cof ? "&amp;cof=" . urlencode($cof) : "");
+        $_ = array();
+        if($domains)    $_[] = 'domains=' . urlencode($domains);
+        if($sitesearch) $_[] = 'sitesearch=' . urlencode($sitesearch);
+        if($client)     $_[] = "client={$client}";
+        if($forid)      $_[] = "forid={$forid}";
+        if($ie)         $_[] = "ie={$ie}";
+        if($oe)         $_[] = "oe={$oe}";
+        if($hl)         $_[] = "hl={$hl}";
+        if($cof)        $_[] = 'cof=' . urlencode($cof);
+        if(!empty($_)) $site_search_options = '&amp;' . join('&amp;',$_);
+        else           $site_search_options = '';
 
         echo "<ol>\n";
         while($row = sql_fetch_array($res, MYSQL_ASSOC)) {
-            $query = $disp_length?shorten($row["query_phrase"], $disp_length, "..."):$row["query_phrase"];
-            echo '<li><a href="' . $site_search_url . "?q=" . urlencode($row["query_phrase"]) . $site_search_options . '">' . htmlspecialchars($query, ENT_QUOTES, _CHARSET) . "</a> (" . number_format($row["query_count"]) . ")</li>\n";
-            // echo '<li><a href="http://search.yahoo.co.jp/search?p=' . urlencode($row["query_phrase"] . " site:www.higuchi.com") . '">' . htmlspecialchars($query) . "</a> (" . number_format($row["query_count"]) . ")</li>\n";
+            $query = $disp_length ? shorten($row['query_phrase'], $disp_length, "..."):$row['query_phrase'];
+            $params = array();
+            $params[] = $site_search_url;
+            $params[] = urlencode($row['query_phrase']);
+            $params[] = $site_search_options;
+            $params[] = htmlspecialchars($query, ENT_QUOTES, _CHARSET);
+            $params[] = number_format($row["query_count"]);
+            echo vsprintf('<li><a href="%s?q=%s%s">%s</a> (%s)</li>', $params) . "\n";
         }
         echo "</ol>\n";
     }
@@ -508,5 +517,4 @@ class Referer {
         $this->cQueryString = mb_convert_encoding($this->cUrlQuery[q], $this->cEncoding, 'UTF-8');
         $this->cEngine = "Ask.jp";
     }
-
 }
