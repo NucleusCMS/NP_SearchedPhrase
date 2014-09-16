@@ -114,28 +114,44 @@ class NP_SearchedPhrase extends NucleusPlugin {
         $pageReferer = new Referer(serverVar('HTTP_REFERER'));
 
         // Store query string from the search engine
-        if ($pageReferer->cQueryString and $this->getOption('StoreQuery') == 'yes') {
-            sql_query('INSERT INTO ' . sql_table('plugin_searched_phrase_history') . " (item_id, cat_id, query_phrase, host, engine, timestamp) VALUES ($item_id, $cat_id, '" . addslashes($pageReferer->cQueryString) . "', '" . addslashes($pageReferer->cHost) . "', '" . addslashes($pageReferer->cEngine) . "', " . mysqldate($b->getCorrectTime()) . ")");
+        if ($pageReferer->cQueryString and $this->getOption('StoreQuery') === 'yes') {
+            $params = array();
+            $params[] = sql_table('plugin_searched_phrase_history');
+            $params[] = $item_id;
+            $params[] = $cat_id;
+            $params[] = addslashes($pageReferer->cQueryString);
+            $params[] = addslashes($pageReferer->cHost);
+            $params[] = addslashes($pageReferer->cEngine);
+            $params[] = mysqldate($b->getCorrectTime());
+            $query = "INSERT INTO %s (item_id, cat_id, query_phrase, host, engine, timestamp) VALUES (%s, %s, '%s', '%s', '%s', %s)";
+            sql_query(vsprintf($query, $params));
             if($life = intval($this->getOption('HistoryLife'))) { // once a day
-                sql_query("DELETE FROM " . sql_table('plugin_searched_phrase_history') . " WHERE timestamp < date_sub('".  date('Y-m-d', $b->getCorrectTime()) . "', interval $life day)");
+                $params = array(sql_table('plugin_searched_phrase_history'), $life, date('Y-m-d', $b->getCorrectTime()));
+                sql_query(vsprintf("DELETE FROM %s WHERE timestamp < date_sub('%s', interval %s day)", $params));
             }
-
-            $res = sql_query('SELECT query_count FROM ' . sql_table('plugin_searched_phrase_count') . " WHERE item_id=$item_id AND cat_id=$cat_id AND query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
+            
+            $params = array(sql_table('plugin_searched_phrase_count'),$item_id,$cat_id,addslashes($pageReferer->cQueryString));
+            $res = sql_query(vsprintf("SELECT query_count FROM %s WHERE item_id=%s AND cat_id=%s AND query_phrase='%s'", $params));
+            
             if (sql_num_rows($res) != 0) {
-                sql_query("UPDATE " . sql_table('plugin_searched_phrase_count') . " SET query_count=query_count+1 WHERE item_id=$item_id AND cat_id=$cat_id AND query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
+                $params = array(sql_table('plugin_searched_phrase_count'),$item_id,$cat_id,addslashes($pageReferer->cQueryString));
+                sql_query(vsprintf("UPDATE %s SET query_count=query_count+1 WHERE item_id=%s AND cat_id=%s AND query_phrase='%s'", $params));
             } else {
-                sql_query("INSERT INTO " . sql_table('plugin_searched_phrase_count') . " (item_id, cat_id, query_phrase, query_count) VALUES ($itemid, $cat_id, '" . addslashes($pageReferer->cQueryString) . "', 1)");
+                $params = array(sql_table('plugin_searched_phrase_count'),$itemid,$cat_idaddslashes($pageReferer->cQueryString));
+                sql_query(vsprintf("INSERT INTO %s (item_id, cat_id, query_phrase, query_count) VALUES (%s, %s, '%s', 1)",$params));
             }
 
             // adding total query count
-            $res = sql_query('SELECT query_count FROM ' . sql_table('plugin_searched_phrase_total') . " WHERE query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
+            $params = array(sql_table('plugin_searched_phrase_total'),addslashes($pageReferer->cQueryString));
+            $res = sql_query(vsprintf("SELECT query_count FROM %s WHERE query_phrase='%s'", $params));
             if (sql_num_rows($res) != 0) {
-                sql_query("UPDATE " . sql_table('plugin_searched_phrase_total') . " SET query_count=query_count+1 WHERE query_phrase='" . addslashes($pageReferer->cQueryString) . "'");
+                $params = array(sql_table('plugin_searched_phrase_total'),addslashes($pageReferer->cQueryString));
+                sql_query(vsprintf("UPDATE %s SET query_count=query_count+1 WHERE query_phrase='%s'", $params));
             } else {
-                sql_query("INSERT INTO " . sql_table('plugin_searched_phrase_total') . " (query_phrase, query_count) VALUES ('" . addslashes($pageReferer->cQueryString) . "', 1)");
+                $params = array(sql_table('plugin_searched_phrase_total'),addslashes($pageReferer->cQueryString));
+                sql_query(vsprintf("INSERT INTO %s (query_phrase, query_count) VALUES ('%s', 1)", $params));
             }
             sql_query('COMMIT');
-
         }
     }
 
@@ -144,20 +160,26 @@ class NP_SearchedPhrase extends NucleusPlugin {
     function install() {
 
         // Create database tables
-        sql_query('CREATE TABLE IF NOT EXISTS ' . sql_table('plugin_searched_phrase_history') .' (item_id INT(11) NOT NULL, query_phrase VARCHAR(200), host VARCHAR(30), engine VARCHAR(20), timestamp DATETIME NOT NULL)');
-        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_history') .' ADD INDEX timestamp (timestamp)');
-        sql_query('CREATE TABLE IF NOT EXISTS ' . sql_table('plugin_searched_phrase_count') .' (item_id INT(11) NOT NULL, query_phrase VARCHAR(200) NOT NULL, query_count INT(11) NOT NULL DEFAULT 1, PRIMARY KEY (item_id, query_phrase))');
+        $tbl_count   = sql_table('plugin_searched_phrase_count');
+        $tbl_history = sql_table('plugin_searched_phrase_history');
+        $tbl_total   = sql_table('plugin_searched_phrase_total');
+        
+        $query = 'CREATE TABLE IF NOT EXISTS %s (item_id INT(11) NOT NULL, query_phrase VARCHAR(200), host VARCHAR(30), engine VARCHAR(20), timestamp DATETIME NOT NULL)';
+        sql_query(sprintf($query,$tbl_history));
+        sql_query("ALTER TABLE {$tbl_history} ADD INDEX timestamp (timestamp)");
+        $query = 'CREATE TABLE IF NOT EXISTS %s (item_id INT(11) NOT NULL, query_phrase VARCHAR(200) NOT NULL, query_count INT(11) NOT NULL DEFAULT 1, PRIMARY KEY (item_id, query_phrase))';
+        sql_query(sprintf($query, $tbl_count));
 
-        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' ADD (cat_id INT(11) NOT NULL DEFAULT 0)'); // from Version 1.0b7
-        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' DROP PRIMARY KEY'); // from Version 1.0b7
-        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' ADD UNIQUE u_key (cat_id, item_id, query_phrase)'); // from Version 1.0b7
-        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' ADD INDEX query_count (query_count)');
-        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' ADD INDEX item_id (item_id)');
-        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_count') .' ADD INDEX cat_id (cat_id)'); //from Version 1.0b7
+        sql_query("ALTER TABLE {$tbl_count} ADD (cat_id INT(11) NOT NULL DEFAULT 0)"); // from Version 1.0b7
+        sql_query("ALTER TABLE {$tbl_count} DROP PRIMARY KEY"); // from Version 1.0b7
+        sql_query("ALTER TABLE {$tbl_count} ADD UNIQUE u_key (cat_id, item_id, query_phrase)"); // from Version 1.0b7
+        sql_query("ALTER TABLE {$tbl_count} ADD INDEX query_count (query_count)");
+        sql_query("ALTER TABLE {$tbl_count} ADD INDEX item_id (item_id)");
+        sql_query("ALTER TABLE {$tbl_count} ADD INDEX cat_id (cat_id)"); //from Version 1.0b7
 
-        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_history') .' ADD (cat_id INT(11) NOT NULL DEFAULT 0)'); // from Version 1.0b7
-        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_history') .' ADD INDEX item_id (item_id)');
-        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_history') .' ADD INDEX cat_id (cat_id)'); //from Version 1.0b7
+        sql_query("ALTER TABLE {$tbl_history} ADD (cat_id INT(11) NOT NULL DEFAULT 0)"); // from Version 1.0b7
+        sql_query("ALTER TABLE {$tbl_history} ADD INDEX item_id (item_id)");
+        sql_query("ALTER TABLE {$tbl_history} ADD INDEX cat_id (cat_id)"); //from Version 1.0b7
 
         // Options
         $this->createOption('StoreQuery', 'Store searched query phrase into the database', 'yesno', 'yes');
@@ -173,14 +195,15 @@ class NP_SearchedPhrase extends NucleusPlugin {
         $this->createOption('SiteSearchCof', 'Google SiteSearch "cof" option. Leave empty if none', 'textarea', '');
 
         // create total count table if from version prior to 1.0b7
-        sql_query('CREATE TABLE IF NOT EXISTS ' . sql_table('plugin_searched_phrase_total') .' (query_count INT(11) NOT NULL DEFAULT 1, query_phrase VARCHAR(200) NOT NULL)');
-        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_total') .' ADD PRIMARY KEY (query_phrase)');
-        sql_query('ALTER TABLE ' . sql_table('plugin_searched_phrase_total') .' ADD INDEX (query_count)');
-        $res = sql_query('SELECT query_count FROM ' . sql_table('plugin_searched_phrase_total'));
+        sql_query("CREATE TABLE IF NOT EXISTS {$tbl_total} (query_count INT(11) NOT NULL DEFAULT 1, query_phrase VARCHAR(200) NOT NULL)");
+        sql_query("ALTER TABLE {$tbl_total} ADD PRIMARY KEY (query_phrase)");
+        sql_query("ALTER TABLE {$tbl_total} ADD INDEX (query_count)");
+        $res = sql_query("SELECT query_count FROM {$tbl_total}");
         if (sql_num_rows($res) == 0) {
-            $res = sql_query('SELECT SUM(query_count) query_count, query_phrase FROM ' . sql_table('plugin_searched_phrase_count') . ' GROUP BY query_phrase');
+            $res = sql_query("SELECT SUM(query_count) query_count, query_phrase FROM {$tbl_count} GROUP BY query_phrase");
+            $query = "INSERT INTO %s (query_phrase, query_count) VALUES ('%s', %s)";
             while ($row = sql_fetch_array($res)) {
-                sql_query("INSERT INTO " . sql_table('plugin_searched_phrase_total') . " (query_phrase, query_count) VALUES ('" . addslashes($row["query_phrase"]) . "', " . $row["query_count"] . ")");
+                sql_query(sprintf($query, $tbl_total, addslashes($row['query_phrase']), $row['query_count']));
             }
         }
     }
@@ -195,12 +218,14 @@ class NP_SearchedPhrase extends NucleusPlugin {
 
 function rankList($t, $item, $cat, $rows, $disp_length) {
     if (is_numeric($item) && $item) {
-        $res = sql_query('SELECT query_phrase, query_count FROM ' . sql_table('plugin_searched_phrase_count') . " WHERE item_id=$item AND cat_id=0 ORDER BY query_count DESC LIMIT 0, $rows");
+        $tbl_count = sql_table('plugin_searched_phrase_count');
+        $tbl_total = sql_table('plugin_searched_phrase_total');
+        $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_count} WHERE item_id={$item} AND cat_id=0 ORDER BY query_count DESC LIMIT 0, {$rows}");
     } else { // We're in an index page
         if (is_numeric($cat) && $cat) { // in a category index. displays queries in the category
-            $res = sql_query('SELECT query_phrase, query_count FROM ' . sql_table('plugin_searched_phrase_count') . " WHERE item_id=0 AND cat_id=$cat ORDER BY query_count DESC LIMIT 0, $rows");
+            $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_count} WHERE item_id=0 AND cat_id={$cat} ORDER BY query_count DESC LIMIT 0, {$rows}");
         } else { // in the main index. displays all queries
-            $res = sql_query('SELECT query_phrase, query_count FROM ' . sql_table('plugin_searched_phrase_total') . " ORDER BY query_count DESC LIMIT 0, $rows");
+            $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_total} ORDER BY query_count DESC LIMIT 0, {$rows}");
         }
     }
     if (sql_num_rows($res)) {
@@ -235,22 +260,30 @@ function rankList($t, $item, $cat, $rows, $disp_length) {
 }
 
 function recentList($item, $cat, $rows, $disp_length) {
-    if (is_numeric($item) && $item){ // We're in an item page
-        $res = sql_query('SELECT query_phrase, host, engine, timestamp FROM ' . sql_table('plugin_searched_phrase_history') . " WHERE item_id=$item AND cat_id=0 ORDER BY timestamp DESC LIMIT 0, $rows");
-    } else { // We're in an index page
-        if (is_numeric($cat) && $cat) { // We're in a category index page
-            $res = sql_query('SELECT query_phrase, item_id, ititle, host, engine, timestamp FROM ' . sql_table('plugin_searched_phrase_history') . ' LEFT JOIN ' . sql_table('item') . " ON item_id=inumber WHERE cat_id=$cat AND item_id=0 ORDER BY timestamp DESC LIMIT 0, $rows");
-        } else { // We're in the main index page
-            $res = sql_query('SELECT query_phrase, item_id, ititle, host, engine, timestamp FROM ' . sql_table('plugin_searched_phrase_history') . ' LEFT JOIN ' . sql_table('item') . " ON item_id=inumber ORDER BY timestamp DESC LIMIT 0, $rows");
-        }
+    
+    $tbl_history = sql_table('plugin_searched_phrase_history');
+    $tbl_item    = sql_table('item');
+    
+    if (is_numeric($item) && $item) // We're in an item page
+    {
+        $res = sql_query("SELECT query_phrase, host, engine, timestamp FROM {$tbl_history} WHERE item_id={$item} AND cat_id=0 ORDER BY timestamp DESC LIMIT 0, {$rows}");
     }
+    elseif (is_numeric($cat) && $cat) // We're in a category index page
+    {
+        $res = sql_query("SELECT query_phrase, item_id, ititle, host, engine, timestamp FROM {$tbl_history} LEFT JOIN {$tbl_item} ON item_id=inumber WHERE cat_id={$cat} AND item_id=0 ORDER BY timestamp DESC LIMIT 0, {$rows}");
+    }
+    else // We're in the main index page
+    {
+        $res = sql_query("SELECT query_phrase, item_id, ititle, host, engine, timestamp FROM {$tbl_history} LEFT JOIN {$tbl_item} ON item_id=inumber ORDER BY timestamp DESC LIMIT 0, {$rows}");
+    }
+    
     if (sql_num_rows($res)) {
         echo "<dl>\n";
         while($row = sql_fetch_array($res, MYSQL_ASSOC)) {
-            $query = $disp_length?shorten($row["query_phrase"], $disp_length, "..."):$row["query_phrase"];
+            $query = $disp_length?shorten($row['query_phrase'], $disp_length, "..."):$row['query_phrase'];
             echo "<dt>" . htmlspecialchars($query, ENT_QUOTES, _CHARSET) . "</dt>\n";
-            if (!is_numeric($item) and $row["item_id"] != 0) {
-                $title = $disp_length?shorten($row["ititle"], $disp_length, "..."):$row["ititle"];
+            if (!is_numeric($item) and $row['item_id'] != 0) {
+                $title = $disp_length?shorten($row['ititle'], $disp_length, "..."):$row["ititle"];
                 echo '<dd><a href="' . createItemLink($row["item_id"]) . '">' . htmlspecialchars($title, ENT_QUOTES, _CHARSET) . "</a></dd>\n";
             }
             echo '<dd><a href="http://' . $row["host"] . '/">' . $row["engine"] . '</a> - ' . strftime("%y/%m/%d %H:%M:%S", strtotime($row["timestamp"])) . "</dd>\n";
