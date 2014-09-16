@@ -44,10 +44,12 @@ class NP_SearchedPhrase extends NucleusPlugin {
     function getVersion() {return '1.1';}
     function getDescription() {
         return '&lt;%SearchedPhrase%&gt; shows the search phrase which the visitor typed into the search engine to come to your blog. This plug-in supports various search engines, and Japanese search phrase is decoded/encoded according to the current internal encoding.';
+    }
+    
     function supportsFeature($what) {return in_array($what,array('SqlTablePrefix','SqlApi'));}
     function getMinNucleusVersion() {return '350';}
-    }
-
+    function getEventList()         {return array('InitSkinParse');}
+    
     function doTemplateVar(&$item) {
         global $pageReferer;
         echo htmlspecialchars($pageReferer->cQueryString, ENT_QUOTES, _CHARSET);
@@ -84,7 +86,7 @@ class NP_SearchedPhrase extends NucleusPlugin {
         }
     }
 
-    function init() {
+    function event_InitSkinParse() {
         global $pageReferer;
         global $itemid, $catid;
         global $manager, $CONF;
@@ -100,7 +102,6 @@ class NP_SearchedPhrase extends NucleusPlugin {
 
             if(is_numeric($catid) && $catid) $cat_id = $catid; // Category index
             else                             $cat_id = 0;      // Other
-            }
         }
 
         $b = & $manager->getBlog($CONF['DefaultBlog']);
