@@ -38,21 +38,20 @@
 
 class NP_SearchedPhrase extends NucleusPlugin {
 
-    function getName()    {return 'Searched Phrase';    }
-    function getAuthor()  {return 'Osamu Higuchi';    }
-    function getURL()     { return 'http://www.higuchi.com/dokuwiki/nucleus:np_searchedphrase'; }
-    function getVersion() {   return '1.1'; }
+    function getName()    {return 'Searched Phrase';}
+    function getAuthor()  {return 'Osamu Higuchi';}
+    function getURL()     {return 'http://www.higuchi.com/dokuwiki/nucleus:np_searchedphrase';}
+    function getVersion() {return '1.1';}
     function getDescription() {
         return '&lt;%SearchedPhrase%&gt; shows the search phrase which the visitor typed into the search engine to come to your blog. This plug-in supports various search engines, and Japanese search phrase is decoded/encoded according to the current internal encoding.';
+    function supportsFeature($what) {return in_array($what,array('SqlTablePrefix','SqlApi'));}
+    function getMinNucleusVersion() {return '350';}
     }
 
     function doTemplateVar(&$item) {
         global $pageReferer;
         echo htmlspecialchars($pageReferer->cQueryString, ENT_QUOTES, _CHARSET);
     }
-
-    function supportsFeature($what) {return in_array($what,array('SqlTablePrefix','SqlApi'));}
-    function getMinNucleusVersion() {return '350';}
 
     function doSkinVar($skinType, $type = "query", $item="", $rows = 5, $disp_length = 0) {
         global $pageReferer, $itemid, $catid;
@@ -90,23 +89,19 @@ class NP_SearchedPhrase extends NucleusPlugin {
         global $itemid, $catid;
         global $manager, $CONF;
 
-        if(is_numeric($itemid) && $itemid) {
-            $item_id=$itemid;
-            // We're in an item page
-            $cat_id=0;
-        } else {
-            // We're in an index page
-            $item_id=0;
+        if(is_numeric($itemid) && $itemid)  // We're in an item page
+        {
+            $item_id = $itemid;
+            $cat_id  = 0;
+        }
+        else
+        {
+            $item_id=0; // We're in an index page
 
-            if(is_numeric($catid) && $catid) {
-                // Category index
-                $cat_id=$catid;
-            } else {
-                // Other
-                $cat_id=0;
+            if(is_numeric($catid) && $catid) $cat_id = $catid; // Category index
+            else                             $cat_id = 0;      // Other
             }
         }
-
 
         $b = & $manager->getBlog($CONF['DefaultBlog']);
 
