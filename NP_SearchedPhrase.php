@@ -60,11 +60,10 @@ class NP_SearchedPhrase extends NucleusPlugin {
         if($item == "") $item = $itemid;
         switch ($type) {
             case 'rank':
-                rankList($this, $item, $catid, $rows, $disp_length);
+                $this->rankList($item, $catid, $rows, $disp_length);
                 break;
-            case 'recent':
-                // Shows recent queries only on specified item
-                recentList($item, $catid, $rows, $disp_length);
+            case 'recent': // Shows recent queries only on specified item
+                $this->recentList($item, $catid, $rows, $disp_length);
                 break;
             case 'host':
                 echo htmlspecialchars($pageReferer->cHost, ENT_QUOTES, _CHARSET);
@@ -212,88 +211,87 @@ class NP_SearchedPhrase extends NucleusPlugin {
 //        sql_query('DROP TABLE ' . sql_table('plugin_searched_phrase_count'));
     }
 
-}
-
-function rankList($t, $item, $cat, $rows, $disp_length) {
-    if (is_numeric($item) && $item) {
-        $tbl_count = sql_table('plugin_searched_phrase_count');
-        $tbl_total = sql_table('plugin_searched_phrase_total');
-        $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_count} WHERE item_id={$item} AND cat_id=0 ORDER BY query_count DESC LIMIT 0, {$rows}");
-    } else { // We're in an index page
-        if (is_numeric($cat) && $cat) { // in a category index. displays queries in the category
-            $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_count} WHERE item_id=0 AND cat_id={$cat} ORDER BY query_count DESC LIMIT 0, {$rows}");
-        } else { // in the main index. displays all queries
-            $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_total} ORDER BY query_count DESC LIMIT 0, {$rows}");
-        }
-    }
-    if (sql_num_rows($res)) {
-        $site_search_url = $t->getOption('SearchURL');
-
-        $domains    = $t->getOption('SiteSearchDomains');
-        $sitesearch = $t->getOption('SiteSearchSitesearch');
-        $client     = $t->getOption('SiteSearchClient');
-        $forid      = $t->getOption('SiteSearchForid');
-        $ie         = $t->getOption('SiteSearchIe');
-        $oe         = $t->getOption('SiteSearchOe');
-        $hl         = $t->getOption('SiteSearchHl');
-        $cof        = $t->getOption('SiteSearchCof');
-
-        $_ = array();
-        if($domains)    $_[] = 'domains=' . urlencode($domains);
-        if($sitesearch) $_[] = 'sitesearch=' . urlencode($sitesearch);
-        if($client)     $_[] = "client={$client}";
-        if($forid)      $_[] = "forid={$forid}";
-        if($ie)         $_[] = "ie={$ie}";
-        if($oe)         $_[] = "oe={$oe}";
-        if($hl)         $_[] = "hl={$hl}";
-        if($cof)        $_[] = 'cof=' . urlencode($cof);
-        if(!empty($_)) $site_search_options = '&amp;' . join('&amp;',$_);
-        else           $site_search_options = '';
-
-        echo "<ol>\n";
-        while($row = sql_fetch_array($res, MYSQL_ASSOC)) {
-            $query = $disp_length ? shorten($row['query_phrase'], $disp_length, "..."):$row['query_phrase'];
-            $params = array();
-            $params[] = $site_search_url;
-            $params[] = urlencode($row['query_phrase']);
-            $params[] = $site_search_options;
-            $params[] = htmlspecialchars($query, ENT_QUOTES, _CHARSET);
-            $params[] = number_format($row["query_count"]);
-            echo vsprintf('<li><a href="%s?q=%s%s">%s</a> (%s)</li>', $params) . "\n";
-        }
-        echo "</ol>\n";
-    }
-}
-
-function recentList($item, $cat, $rows, $disp_length) {
-    
-    $tbl_history = sql_table('plugin_searched_phrase_history');
-    $tbl_item    = sql_table('item');
-    
-    if (is_numeric($item) && $item) // We're in an item page
-    {
-        $res = sql_query("SELECT query_phrase, host, engine, timestamp FROM {$tbl_history} WHERE item_id={$item} AND cat_id=0 ORDER BY timestamp DESC LIMIT 0, {$rows}");
-    }
-    elseif (is_numeric($cat) && $cat) // We're in a category index page
-    {
-        $res = sql_query("SELECT query_phrase, item_id, ititle, host, engine, timestamp FROM {$tbl_history} LEFT JOIN {$tbl_item} ON item_id=inumber WHERE cat_id={$cat} AND item_id=0 ORDER BY timestamp DESC LIMIT 0, {$rows}");
-    }
-    else // We're in the main index page
-    {
-        $res = sql_query("SELECT query_phrase, item_id, ititle, host, engine, timestamp FROM {$tbl_history} LEFT JOIN {$tbl_item} ON item_id=inumber ORDER BY timestamp DESC LIMIT 0, {$rows}");
-    }
-    
-    if (sql_num_rows($res)) {
-        echo "<dl>\n";
-        while($row = sql_fetch_array($res, MYSQL_ASSOC)) {
-            $query = $disp_length?shorten($row['query_phrase'], $disp_length, "..."):$row['query_phrase'];
-            echo "<dt>" . htmlspecialchars($query, ENT_QUOTES, _CHARSET) . "</dt>\n";
-            if (!is_numeric($item) and $row['item_id'] != 0) {
-                $title = $disp_length?shorten($row['ititle'], $disp_length, "..."):$row["ititle"];
-                echo '<dd><a href="' . createItemLink($row["item_id"]) . '">' . htmlspecialchars($title, ENT_QUOTES, _CHARSET) . "</a></dd>\n";
-            }
-            echo '<dd><a href="http://' . $row["host"] . '/">' . $row["engine"] . '</a> - ' . strftime("%y/%m/%d %H:%M:%S", strtotime($row["timestamp"])) . "</dd>\n";
-        }
-        echo "</dl>\n";
-    }
+	function rankList($item, $cat, $rows, $disp_length) {
+	    if (is_numeric($item) && $item) {
+	        $tbl_count = sql_table('plugin_searched_phrase_count');
+	        $tbl_total = sql_table('plugin_searched_phrase_total');
+	        $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_count} WHERE item_id={$item} AND cat_id=0 ORDER BY query_count DESC LIMIT 0, {$rows}");
+	    } else { // We're in an index page
+	        if (is_numeric($cat) && $cat) { // in a category index. displays queries in the category
+	            $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_count} WHERE item_id=0 AND cat_id={$cat} ORDER BY query_count DESC LIMIT 0, {$rows}");
+	        } else { // in the main index. displays all queries
+	            $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_total} ORDER BY query_count DESC LIMIT 0, {$rows}");
+	        }
+	    }
+	    if (sql_num_rows($res)) {
+	        $site_search_url = $this->getOption('SearchURL');
+	
+	        $domains    = $this->getOption('SiteSearchDomains');
+	        $sitesearch = $this->getOption('SiteSearchSitesearch');
+	        $client     = $this->getOption('SiteSearchClient');
+	        $forid      = $this->getOption('SiteSearchForid');
+	        $ie         = $this->getOption('SiteSearchIe');
+	        $oe         = $this->getOption('SiteSearchOe');
+	        $hl         = $this->getOption('SiteSearchHl');
+	        $cof        = $this->getOption('SiteSearchCof');
+	
+	        $_ = array();
+	        if($domains)    $_[] = 'domains=' . urlencode($domains);
+	        if($sitesearch) $_[] = 'sitesearch=' . urlencode($sitesearch);
+	        if($client)     $_[] = "client={$client}";
+	        if($forid)      $_[] = "forid={$forid}";
+	        if($ie)         $_[] = "ie={$ie}";
+	        if($oe)         $_[] = "oe={$oe}";
+	        if($hl)         $_[] = "hl={$hl}";
+	        if($cof)        $_[] = 'cof=' . urlencode($cof);
+	        if(!empty($_)) $site_search_options = '&amp;' . join('&amp;',$_);
+	        else           $site_search_options = '';
+	
+	        echo "<ol>\n";
+	        while($row = sql_fetch_array($res, MYSQL_ASSOC)) {
+	            $query = $disp_length ? shorten($row['query_phrase'], $disp_length, "..."):$row['query_phrase'];
+	            $params = array();
+	            $params[] = $site_search_url;
+	            $params[] = urlencode($row['query_phrase']);
+	            $params[] = $site_search_options;
+	            $params[] = htmlspecialchars($query, ENT_QUOTES, _CHARSET);
+	            $params[] = number_format($row["query_count"]);
+	            echo vsprintf('<li><a href="%s?q=%s%s">%s</a> (%s)</li>', $params) . "\n";
+	        }
+	        echo "</ol>\n";
+	    }
+	}
+	
+	function recentList($item, $cat, $rows, $disp_length) {
+	    
+	    $tbl_history = sql_table('plugin_searched_phrase_history');
+	    $tbl_item    = sql_table('item');
+	    
+	    if (is_numeric($item) && $item) // We're in an item page
+	    {
+	        $res = sql_query("SELECT query_phrase, host, engine, timestamp FROM {$tbl_history} WHERE item_id={$item} AND cat_id=0 ORDER BY timestamp DESC LIMIT 0, {$rows}");
+	    }
+	    elseif (is_numeric($cat) && $cat) // We're in a category index page
+	    {
+	        $res = sql_query("SELECT query_phrase, item_id, ititle, host, engine, timestamp FROM {$tbl_history} LEFT JOIN {$tbl_item} ON item_id=inumber WHERE cat_id={$cat} AND item_id=0 ORDER BY timestamp DESC LIMIT 0, {$rows}");
+	    }
+	    else // We're in the main index page
+	    {
+	        $res = sql_query("SELECT query_phrase, item_id, ititle, host, engine, timestamp FROM {$tbl_history} LEFT JOIN {$tbl_item} ON item_id=inumber ORDER BY timestamp DESC LIMIT 0, {$rows}");
+	    }
+	    
+	    if (sql_num_rows($res)) {
+	        echo "<dl>\n";
+	        while($row = sql_fetch_array($res, MYSQL_ASSOC)) {
+	            $query = $disp_length ? shorten($row['query_phrase'], $disp_length, "..."):$row['query_phrase'];
+	            echo "<dt>" . htmlspecialchars($query, ENT_QUOTES, _CHARSET) . "</dt>\n";
+	            if (!is_numeric($item) and $row['item_id'] != 0) {
+	                $title = $disp_length ? shorten($row['ititle'], $disp_length, "..."):$row["ititle"];
+	                echo '<dd><a href="' . createItemLink($row["item_id"]) . '">' . htmlspecialchars($title, ENT_QUOTES, _CHARSET) . "</a></dd>\n";
+	            }
+	            echo '<dd><a href="http://' . $row["host"] . '/">' . $row["engine"] . '</a> - ' . strftime("%y/%m/%d %H:%M:%S", strtotime($row["timestamp"])) . "</dd>\n";
+	        }
+	        echo "</dl>\n";
+	    }
+	}
 }
