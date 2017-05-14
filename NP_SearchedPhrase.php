@@ -220,44 +220,43 @@ class NP_SearchedPhrase extends NucleusPlugin {
         else                                      $where = '';                                  // in the main index. displays all queries
 	    
 	    $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_count} {$where} ORDER BY query_count DESC LIMIT 0, {$rows}");
+	    if (!sql_num_rows($res)) return;
 	    
-	    if (sql_num_rows($res)) {
-	        $site_search_url = $this->getOption('SearchURL');
-	
-	        $domains    = $this->getOption('SiteSearchDomains');
-	        $sitesearch = $this->getOption('SiteSearchSitesearch');
-	        $client     = $this->getOption('SiteSearchClient');
-	        $forid      = $this->getOption('SiteSearchForid');
-	        $ie         = $this->getOption('SiteSearchIe');
-	        $oe         = $this->getOption('SiteSearchOe');
-	        $hl         = $this->getOption('SiteSearchHl');
-	        $cof        = $this->getOption('SiteSearchCof');
-	
-	        $_ = array();
-	        if($domains)    $_[] = 'domains=' . urlencode($domains);
-	        if($sitesearch) $_[] = 'sitesearch=' . urlencode($sitesearch);
-	        if($client)     $_[] = "client={$client}";
-	        if($forid)      $_[] = "forid={$forid}";
-	        if($ie)         $_[] = "ie={$ie}";
-	        if($oe)         $_[] = "oe={$oe}";
-	        if($hl)         $_[] = "hl={$hl}";
-	        if($cof)        $_[] = 'cof=' . urlencode($cof);
-	        if(!empty($_)) $site_search_options = '&amp;' . join('&amp;',$_);
-	        else           $site_search_options = '';
-	
-	        echo "<ol>\n";
-	        while($row = sql_fetch_array($res, MYSQL_ASSOC)) {
-	            $query = $disp_length ? shorten($row['query_phrase'], $disp_length, "..."):$row['query_phrase'];
-	            $params = array();
-	            $params[] = $site_search_url;
-	            $params[] = urlencode($row['query_phrase']);
-	            $params[] = $site_search_options;
-	            $params[] = htmlspecialchars($query, ENT_QUOTES, _CHARSET);
-	            $params[] = number_format($row["query_count"]);
-	            echo vsprintf('<li><a href="%s?q=%s%s">%s</a> (%s)</li>', $params) . "\n";
-	        }
-	        echo "</ol>\n";
-	    }
+        $site_search_url = $this->getOption('SearchURL');
+
+        $domains    = $this->getOption('SiteSearchDomains');
+        $sitesearch = $this->getOption('SiteSearchSitesearch');
+        $client     = $this->getOption('SiteSearchClient');
+        $forid      = $this->getOption('SiteSearchForid');
+        $ie         = $this->getOption('SiteSearchIe');
+        $oe         = $this->getOption('SiteSearchOe');
+        $hl         = $this->getOption('SiteSearchHl');
+        $cof        = $this->getOption('SiteSearchCof');
+
+        $_ = array();
+        if($domains)    $_[] = 'domains=' . urlencode($domains);
+        if($sitesearch) $_[] = 'sitesearch=' . urlencode($sitesearch);
+        if($client)     $_[] = "client={$client}";
+        if($forid)      $_[] = "forid={$forid}";
+        if($ie)         $_[] = "ie={$ie}";
+        if($oe)         $_[] = "oe={$oe}";
+        if($hl)         $_[] = "hl={$hl}";
+        if($cof)        $_[] = 'cof=' . urlencode($cof);
+        if(!empty($_)) $site_search_options = '&amp;' . join('&amp;',$_);
+        else           $site_search_options = '';
+
+        echo "<ol>\n";
+        while($row = sql_fetch_array($res, MYSQL_ASSOC)) {
+            $query = $disp_length ? shorten($row['query_phrase'], $disp_length, "..."):$row['query_phrase'];
+            $params = array();
+            $params[] = $site_search_url;
+            $params[] = urlencode($row['query_phrase']);
+            $params[] = $site_search_options;
+            $params[] = htmlspecialchars($query, ENT_QUOTES, _CHARSET);
+            $params[] = number_format($row["query_count"]);
+            echo vsprintf('<li><a href="%s?q=%s%s">%s</a> (%s)</li>', $params) . "\n";
+        }
+        echo "</ol>\n";
 	}
 	
 	function recentList($item, $cat, $rows, $disp_length) {
