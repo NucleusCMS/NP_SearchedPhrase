@@ -52,7 +52,7 @@ class NP_SearchedPhrase extends NucleusPlugin {
     
     function doTemplateVar(&$item) {
         global $pageReferer;
-        echo htmlspecialchars($pageReferer->cQueryString, ENT_QUOTES, _CHARSET);
+        echo hsc($pageReferer->cQueryString);
     }
 
     function doSkinVar($skinType, $type = "query", $item="", $rows = 5, $disp_length = 0) {
@@ -66,22 +66,22 @@ class NP_SearchedPhrase extends NucleusPlugin {
                 $this->recentList($item, $catid, $rows, $disp_length);
                 break;
             case 'host':
-                echo htmlspecialchars($pageReferer->cHost, ENT_QUOTES, _CHARSET);
+                echo hsc($pageReferer->cHost);
                 break;
             case 'engine':
-                echo htmlspecialchars($pageReferer->cEngine, ENT_QUOTES, _CHARSET);
+                echo hsc($pageReferer->cEngine);
                 break;
             case 'highlight':
                 if ($pageReferer->cQueryString)
                 {
                     $scripts = file_get_contents($this->getDirectory() . 'jscripts.inc');
-                    $queryString = htmlspecialchars($pageReferer->cQueryString, ENT_QUOTES, _CHARSET);
+                    $queryString = hsc($pageReferer->cQueryString);
                     echo str_replace('<%queryString%>', $queryString, $scripts);
                 }
                 break;
             case 'query':
             default:
-                echo htmlspecialchars($pageReferer->cQueryString, ENT_QUOTES, _CHARSET);
+                echo hsc($pageReferer->cQueryString);
         }
     }
 
@@ -252,7 +252,7 @@ class NP_SearchedPhrase extends NucleusPlugin {
             $params[] = $site_search_url;
             $params[] = urlencode($row['query_phrase']);
             $params[] = $site_search_options;
-            $params[] = htmlspecialchars($query, ENT_QUOTES, _CHARSET);
+            $params[] = hsc($query);
             $params[] = number_format($row["query_count"]);
             echo vsprintf('<li><a href="%s?q=%s%s">%s</a> (%s)</li>', $params) . "\n";
         }
@@ -281,10 +281,10 @@ class NP_SearchedPhrase extends NucleusPlugin {
 	        echo "<dl>\n";
 	        while($row = sql_fetch_array($res, MYSQL_ASSOC)) {
 	            $query = $disp_length ? shorten($row['query_phrase'], $disp_length, "..."):$row['query_phrase'];
-	            echo "<dt>" . htmlspecialchars($query, ENT_QUOTES, _CHARSET) . "</dt>\n";
+	            echo "<dt>" . hsc($query) . "</dt>\n";
 	            if (!is_numeric($item) and $row['item_id'] != 0) {
 	                $title = $disp_length ? shorten($row['ititle'], $disp_length, "..."):$row["ititle"];
-	                echo '<dd><a href="' . createItemLink($row["item_id"]) . '">' . htmlspecialchars($title, ENT_QUOTES, _CHARSET) . "</a></dd>\n";
+	                echo '<dd><a href="' . createItemLink($row["item_id"]) . '">' . hsc($title) . "</a></dd>\n";
 	            }
 	            echo '<dd><a href="http://' . $row["host"] . '/">' . $row["engine"] . '</a> - ' . strftime("%y/%m/%d %H:%M:%S", strtotime($row["timestamp"])) . "</dd>\n";
 	        }
