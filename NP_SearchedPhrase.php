@@ -212,9 +212,9 @@ class NP_SearchedPhrase extends NucleusPlugin {
     }
 
 	function rankList($item, $cat, $rows, $disp_length) {
+        $tbl_count = sql_table('plugin_searched_phrase_count');
+        $tbl_total = sql_table('plugin_searched_phrase_total');
 	    if (is_numeric($item) && $item) {
-	        $tbl_count = sql_table('plugin_searched_phrase_count');
-	        $tbl_total = sql_table('plugin_searched_phrase_total');
 	        $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_count} WHERE item_id={$item} AND cat_id=0 ORDER BY query_count DESC LIMIT 0, {$rows}");
 	    } else { // We're in an index page
 	        if (is_numeric($cat) && $cat) { // in a category index. displays queries in the category
