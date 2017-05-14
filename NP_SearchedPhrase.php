@@ -115,9 +115,9 @@ class NP_SearchedPhrase extends NucleusPlugin {
             $params[] = sql_table('plugin_searched_phrase_history');
             $params[] = $item_id;
             $params[] = $cat_id;
-            $params[] = addslashes($pageReferer->cQueryString);
-            $params[] = addslashes($pageReferer->cHost);
-            $params[] = addslashes($pageReferer->cEngine);
+            $params[] = sql_real_escape_string($pageReferer->cQueryString);
+            $params[] = sql_real_escape_string($pageReferer->cHost);
+            $params[] = sql_real_escape_string($pageReferer->cEngine);
             $params[] = mysqldate($b->getCorrectTime());
             $query = "INSERT INTO %s (item_id, cat_id, query_phrase, host, engine, timestamp) VALUES (%s, %s, '%s', '%s', '%s', %s)";
             sql_query(vsprintf($query, $params));
@@ -126,25 +126,25 @@ class NP_SearchedPhrase extends NucleusPlugin {
                 sql_query(vsprintf("DELETE FROM %s WHERE timestamp < date_sub('%s', interval %s day)", $params));
             }
             
-            $params = array(sql_table('plugin_searched_phrase_count'),$item_id,$cat_id,addslashes($pageReferer->cQueryString));
+            $params = array(sql_table('plugin_searched_phrase_count'),$item_id,$cat_id,sql_real_escape_string($pageReferer->cQueryString));
             $res = sql_query(vsprintf("SELECT query_count FROM %s WHERE item_id=%s AND cat_id=%s AND query_phrase='%s'", $params));
             
             if (sql_num_rows($res) != 0) {
-                $params = array(sql_table('plugin_searched_phrase_count'),$item_id,$cat_id,addslashes($pageReferer->cQueryString));
+                $params = array(sql_table('plugin_searched_phrase_count'),$item_id,$cat_id,sql_real_escape_string($pageReferer->cQueryString));
                 sql_query(vsprintf("UPDATE %s SET query_count=query_count+1 WHERE item_id=%s AND cat_id=%s AND query_phrase='%s'", $params));
             } else {
-                $params = array(sql_table('plugin_searched_phrase_count'),$itemid,$cat_idaddslashes($pageReferer->cQueryString));
+                $params = array(sql_table('plugin_searched_phrase_count'),$itemid,$cat_id,sql_real_escape_string($pageReferer->cQueryString));
                 sql_query(vsprintf("INSERT INTO %s (item_id, cat_id, query_phrase, query_count) VALUES (%s, %s, '%s', 1)",$params));
             }
 
             // adding total query count
-            $params = array(sql_table('plugin_searched_phrase_total'),addslashes($pageReferer->cQueryString));
+            $params = array(sql_table('plugin_searched_phrase_total'),sql_real_escape_string($pageReferer->cQueryString));
             $res = sql_query(vsprintf("SELECT query_count FROM %s WHERE query_phrase='%s'", $params));
             if (sql_num_rows($res) != 0) {
-                $params = array(sql_table('plugin_searched_phrase_total'),addslashes($pageReferer->cQueryString));
+                $params = array(sql_table('plugin_searched_phrase_total'),sql_real_escape_string($pageReferer->cQueryString));
                 sql_query(vsprintf("UPDATE %s SET query_count=query_count+1 WHERE query_phrase='%s'", $params));
             } else {
-                $params = array(sql_table('plugin_searched_phrase_total'),addslashes($pageReferer->cQueryString));
+                $params = array(sql_table('plugin_searched_phrase_total'),sql_real_escape_string($pageReferer->cQueryString));
                 sql_query(vsprintf("INSERT INTO %s (query_phrase, query_count) VALUES ('%s', 1)", $params));
             }
             sql_query('COMMIT');
@@ -200,7 +200,7 @@ class NP_SearchedPhrase extends NucleusPlugin {
             $res = sql_query("SELECT SUM(query_count) query_count, query_phrase FROM {$tbl_count} GROUP BY query_phrase");
             $query = "INSERT INTO %s (query_phrase, query_count) VALUES ('%s', %s)";
             while ($row = sql_fetch_array($res)) {
-                sql_query(sprintf($query, $tbl_total, addslashes($row['query_phrase']), $row['query_count']));
+                sql_query(sprintf($query, $tbl_total, sql_real_escape_string($row['query_phrase']), $row['query_count']));
             }
         }
     }
