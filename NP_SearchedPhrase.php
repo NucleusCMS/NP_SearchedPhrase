@@ -90,7 +90,7 @@ class NP_SearchedPhrase extends NucleusPlugin {
         global $itemid, $catid;
         global $manager, $CONF;
 
-        if(is_numeric($itemid) && $itemid)  // We're in an item page
+        if(preg_match('@^[1-9][0-9]*$@',$itemid))  // We're in an item page
         {
             $item_id = $itemid;
             $cat_id  = 0;
@@ -99,7 +99,7 @@ class NP_SearchedPhrase extends NucleusPlugin {
         {
             $item_id=0; // We're in an index page
 
-            if(is_numeric($catid) && $catid) $cat_id = $catid; // Category index
+            if(preg_match('@^[1-9][0-9]*$@',$catid)) $cat_id = $catid; // Category index
             else                             $cat_id = 0;      // Other
         }
 
@@ -215,8 +215,8 @@ class NP_SearchedPhrase extends NucleusPlugin {
         $tbl_count = sql_table('plugin_searched_phrase_count');
         $tbl_total = sql_table('plugin_searched_phrase_total');
         
-	    if    (preg_match('^[1-9][0-9]*$',$item)) $where = "WHERE item_id={$item} AND cat_id=0";
-	    elseif(preg_match('^[1-9][0-9]*$',$cat))  $where = "WHERE item_id=0 AND cat_id={$cat}"; // in a category index. displays queries in the category
+	    if    (preg_match('@^[1-9][0-9]*$@',$item)) $where = "WHERE item_id={$item} AND cat_id=0";
+	    elseif(preg_match('@^[1-9][0-9]*$@',$cat))  $where = "WHERE item_id=0 AND cat_id={$cat}"; // in a category index. displays queries in the category
         else                                      $where = '';                                  // in the main index. displays all queries
 	    
 	    $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_count} {$where} ORDER BY query_count DESC LIMIT 0, {$rows}");
@@ -264,11 +264,11 @@ class NP_SearchedPhrase extends NucleusPlugin {
 	    $tbl_history = sql_table('plugin_searched_phrase_history');
 	    $tbl_item    = sql_table('item');
 	    
-	    if (is_numeric($item) && $item) // We're in an item page
+	    if (preg_match('@^[1-9][0-9]*$@',$item)) // We're in an item page
 	    {
 	        $res = sql_query("SELECT query_phrase, host, engine, timestamp FROM {$tbl_history} WHERE item_id={$item} AND cat_id=0 ORDER BY timestamp DESC LIMIT 0, {$rows}");
 	    }
-	    elseif (is_numeric($cat) && $cat) // We're in a category index page
+	    elseif (preg_match('@^[1-9][0-9]*$@',$cat)) // We're in a category index page
 	    {
 	        $res = sql_query("SELECT query_phrase, item_id, ititle, host, engine, timestamp FROM {$tbl_history} LEFT JOIN {$tbl_item} ON item_id=inumber WHERE cat_id={$cat} AND item_id=0 ORDER BY timestamp DESC LIMIT 0, {$rows}");
 	    }
