@@ -277,18 +277,17 @@ class NP_SearchedPhrase extends NucleusPlugin {
 	        $res = sql_query("SELECT query_phrase, item_id, ititle, host, engine, timestamp FROM {$tbl_history} LEFT JOIN {$tbl_item} ON item_id=inumber ORDER BY timestamp DESC LIMIT 0, {$rows}");
 	    }
 	    
-	    if (sql_num_rows($res)) {
-	        echo "<dl>\n";
-	        while($row = sql_fetch_assoc($res)) {
-	            $query = $disp_length ? shorten($row['query_phrase'], $disp_length, "..."):$row['query_phrase'];
-	            echo "<dt>" . hsc($query) . "</dt>\n";
-	            if (!is_numeric($item) and $row['item_id'] != 0) {
-	                $title = $disp_length ? shorten($row['ititle'], $disp_length, "..."):$row["ititle"];
-	                echo '<dd><a href="' . createItemLink($row["item_id"]) . '">' . hsc($title) . "</a></dd>\n";
-	            }
-	            echo '<dd><a href="http://' . $row["host"] . '/">' . $row["engine"] . '</a> - ' . strftime("%y/%m/%d %H:%M:%S", strtotime($row["timestamp"])) . "</dd>\n";
-	        }
-	        echo "</dl>\n";
-	    }
+	    if (!sql_num_rows($res)) return;
+        echo "<dl>\n";
+        while($row = sql_fetch_assoc($res)) {
+            $query = $disp_length ? shorten($row['query_phrase'], $disp_length, "..."):$row['query_phrase'];
+            echo "<dt>" . hsc($query) . "</dt>\n";
+            if (!is_numeric($item) and $row['item_id'] != 0) {
+                $title = $disp_length ? shorten($row['ititle'], $disp_length, "..."):$row["ititle"];
+                echo '<dd><a href="' . createItemLink($row["item_id"]) . '">' . hsc($title) . "</a></dd>\n";
+            }
+            echo '<dd><a href="http://' . $row["host"] . '/">' . $row["engine"] . '</a> - ' . strftime("%y/%m/%d %H:%M:%S", strtotime($row["timestamp"])) . "</dd>\n";
+        }
+        echo "</dl>\n";
 	}
 }
