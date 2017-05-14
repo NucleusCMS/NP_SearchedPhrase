@@ -214,13 +214,13 @@ class NP_SearchedPhrase extends NucleusPlugin {
 	function rankList($item, $cat, $rows, $disp_length) {
         $tbl_count = sql_table('plugin_searched_phrase_count');
         $tbl_total = sql_table('plugin_searched_phrase_total');
-	    if (is_numeric($item) && $item) {
-	        $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_count} WHERE item_id={$item} AND cat_id=0 ORDER BY query_count DESC LIMIT 0, {$rows}");
-	    } elseif (is_numeric($cat) && $cat) { // in a category index. displays queries in the category
-	            $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_count} WHERE item_id=0 AND cat_id={$cat} ORDER BY query_count DESC LIMIT 0, {$rows}");
-        } else { // in the main index. displays all queries
-	            $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_total} ORDER BY query_count DESC LIMIT 0, {$rows}");
-	    }
+        
+	    if    (preg_match('^[1-9][0-9]*$',$item)) $where = "WHERE item_id={$item} AND cat_id=0";
+	    elseif(preg_match('^[1-9][0-9]*$',$cat))  $where = "WHERE item_id=0 AND cat_id={$cat}"; // in a category index. displays queries in the category
+        else                                      $where = '';                                  // in the main index. displays all queries
+	    
+	    $res = sql_query("SELECT query_phrase, query_count FROM {$tbl_count} {$where} ORDER BY query_count DESC LIMIT 0, {$rows}");
+	    
 	    if (sql_num_rows($res)) {
 	        $site_search_url = $this->getOption('SearchURL');
 	
