@@ -279,7 +279,7 @@ class NP_SearchedPhrase extends NucleusPlugin {
 	    
 	    if (sql_num_rows($res)) {
 	        echo "<dl>\n";
-	        while($row = sql_fetch_array($res, MYSQL_ASSOC)) {
+	        while($row = sql_fetch_assoc($res)) {
 	            $query = $disp_length ? shorten($row['query_phrase'], $disp_length, "..."):$row['query_phrase'];
 	            echo "<dt>" . hsc($query) . "</dt>\n";
 	            if (!is_numeric($item) and $row['item_id'] != 0) {
