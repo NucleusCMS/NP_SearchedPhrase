@@ -48,7 +48,17 @@ class NP_SearchedPhrase extends NucleusPlugin {
     
     function supportsFeature($what) {return in_array($what,array('SqlTablePrefix','SqlApi'));}
     function getMinNucleusVersion() {return '350';}
-    function getEventList()         {return array('InitSkinParse','AdminPrePageFoot');}
+    function getEventList()         {
+        $tbl_history = sql_table('plugin_searched_phrase_history');
+        
+        if(!sql_existTableColumnName($tbl_history, 'uri'))
+            sql_query(sprintf("ALTER TABLE %s ADD (`uri` varchar(512) NOT NULL DEFAULT '')", $tbl_history));
+        
+        if(!sql_existTableColumnName($tbl_history, 'blog_id'))
+            sql_query(sprintf("ALTER TABLE %s ADD (blog_id INT(11) NOT NULL DEFAULT 0)", $tbl_history));
+        
+        return array('InitSkinParse');
+    }
     
     function doTemplateVar(&$item) {
         global $pageReferer;
@@ -155,14 +165,6 @@ class NP_SearchedPhrase extends NucleusPlugin {
         }
     }
 
-    function event_AdminPrePageFoot(&$data){
-        if($data['action']!=='pluginlist') return;
-        $tbl_history = sql_table('plugin_searched_phrase_history');
-        $rs = sql_existTableColumnName($tbl_history, 'uri');
-        if($rs) return;
-        sql_query(sprintf("ALTER TABLE %s ADD (`uri` varchar(512) NOT NULL DEFAULT '')", $tbl_history));
-    }
-    
     function getTableList() {
         return array( sql_table('plugin_searched_phrase_history'), sql_table( 'plugin_searched_phrase_count'), sql_table( 'plugin_searched_phrase_total') ); }
 
@@ -187,7 +189,8 @@ class NP_SearchedPhrase extends NucleusPlugin {
         sql_query("ALTER TABLE {$tbl_count} ADD INDEX cat_id (cat_id)"); //from Version 1.0b7
 
         sql_query("ALTER TABLE {$tbl_history} ADD (cat_id INT(11) NOT NULL DEFAULT 0)"); // from Version 1.0b7
-        sql_query("ALTER TABLE {$tbl_history} ADD (`uri` varchar(512) NOT NULL DEFAULT '')"); // from Version 1.3
+        sql_query("ALTER TABLE {$tbl_history} ADD (blog_id INT(11) NOT NULL DEFAULT 0)"); // from Version 1.4
+        sql_query("ALTER TABLE {$tbl_history} ADD (`uri` varchar(512) NOT NULL DEFAULT '')"); // from Version 1.4
         sql_query("ALTER TABLE {$tbl_history} ADD INDEX item_id (item_id)");
         sql_query("ALTER TABLE {$tbl_history} ADD INDEX cat_id (cat_id)"); //from Version 1.0b7
 
