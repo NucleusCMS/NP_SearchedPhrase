@@ -41,7 +41,7 @@ class NP_SearchedPhrase extends NucleusPlugin {
     function getName()    {return 'Searched Phrase';}
     function getAuthor()  {return 'Osamu Higuchi';}
     function getURL()     {return 'http://www.higuchi.com/dokuwiki/nucleus:np_searchedphrase';}
-    function getVersion() {return '1.2';}
+    function getVersion() {return '1.2.1';}
     function getDescription() {
         return '&lt;%SearchedPhrase%&gt; shows the search phrase which the visitor typed into the search engine to come to your blog. This plug-in supports various search engines, and Japanese search phrase is decoded/encoded according to the current internal encoding.';
     }
