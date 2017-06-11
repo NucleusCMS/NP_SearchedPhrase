@@ -302,7 +302,7 @@ class NP_SearchedPhrase extends NucleusPlugin {
                 $title = $disp_length ? shorten($row['ititle'], $disp_length, "..."):$row["ititle"];
                 echo '<dd><a href="' . createItemLink($row["item_id"]) . '">' . hsc($title) . "</a></dd>\n";
             }
-            echo '<dd><a href="http://' . $row["host"] . '/">' . $row["engine"] . '</a> - ' . strftime("%y/%m/%d %H:%M:%S", strtotime($row["timestamp"])) . "</dd>\n";
+            echo '<dd><a href="http://' . $row["host"] . '/">' . $row["engine"] . '</a> - ' . strftime("%Y/%m/%d %H:%M:%S", strtotime($row["timestamp"])) . "</dd>\n";
         }
         echo "</dl>\n";
 	}
