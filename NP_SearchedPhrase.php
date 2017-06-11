@@ -294,16 +294,24 @@ class NP_SearchedPhrase extends NucleusPlugin {
 	    }
 	    
 	    if (!sql_num_rows($res)) return;
-        echo "<dl>\n";
+        $_ = array();
         while($row = sql_fetch_assoc($res)) {
             $query = $disp_length ? shorten($row['query_phrase'], $disp_length, "..."):$row['query_phrase'];
-            echo "<dt>" . hsc($query) . "</dt>\n";
+            $tpl = '<dt><%query_phrase%></dt>';
+            $ph = array('query_phrase'=>hsc($query));
+            $_[] = parseText($tpl,$ph);
             if (!is_numeric($item) && $row['item_id'] != 0) {
-                $title = $disp_length ? shorten($row['ititle'], $disp_length, "..."):$row["ititle"];
-                echo '<dd><a href="' . createItemLink($row["item_id"]) . '">' . hsc($title) . "</a></dd>\n";
+                $title = $disp_length ? shorten($row['ititle'], $disp_length, '...'):$row['ititle'];
+                $tpl = '<dd><a href="<%item_link%>"><%title%></a></dd>';
+                $ph = array('item_link'=>createItemLink($row['item_id']),'title'=>hsc($title));
+                $_[] = parseText($tpl, $ph);
             }
-            echo '<dd><a href="http://' . $row["host"] . '/">' . $row["engine"] . '</a> - ' . strftime("%Y/%m/%d %H:%M:%S", strtotime($row["timestamp"])) . "</dd>\n";
+            $tpl = '<dd><a href="http://<%host%>/"><%engine%></a> - <%date%></p></li>';
+            $ph = array('host'=>$row['host'],'engine'=>$row['engine'],'date'=>strftime('%Y/%m/%d %H:%M:%S', strtotime($row['timestamp'])));
+            $_[] = parseText($tpl,$ph);
         }
+        echo "<dl>\n";
+        echo join("\n", $_);
         echo "</dl>\n";
 	}
 }
