@@ -89,6 +89,7 @@ class NP_SearchedPhrase extends NucleusPlugin {
         global $pageReferer;
         global $itemid, $catid;
         global $manager, $CONF;
+        global $blogid;
 
         if(preg_match('@^[1-9][0-9]*$@',$itemid))  // We're in an item page
         {
@@ -103,6 +104,7 @@ class NP_SearchedPhrase extends NucleusPlugin {
             else                             $cat_id = 0;      // Other
         }
 
+        if(!$blogid) $blogid = $CONF['DefaultBlog'];
         $b = & $manager->getBlog($CONF['DefaultBlog']);
 
         // Analyze HTTP_REFERER
@@ -115,12 +117,13 @@ class NP_SearchedPhrase extends NucleusPlugin {
             $params[] = sql_table('plugin_searched_phrase_history');
             $params[] = $item_id;
             $params[] = $cat_id;
+            $params[] = $blogid;
             $params[] = sql_real_escape_string($pageReferer->cQueryString);
             $params[] = sql_real_escape_string($pageReferer->cHost);
             $params[] = sql_real_escape_string($pageReferer->cEngine);
             $params[] = mysqldate($b->getCorrectTime());
             $params[] = sql_real_escape_string($_SERVER['REQUEST_URI']);
-            $query = "INSERT INTO %s (item_id, cat_id, query_phrase, host, engine, timestamp, uri) VALUES (%s, %s, '%s', '%s', '%s', %s, '%s')";
+            $query = "INSERT INTO %s (item_id, cat_id, blog_id, query_phrase, host, engine, timestamp, uri) VALUES (%s, %s, %s, '%s', '%s', '%s', %s, '%s')";
             sql_query(vsprintf($query, $params));
             if($life = intval($this->getOption('HistoryLife'))) { // once a day
                 $params = array(sql_table('plugin_searched_phrase_history'), $life, date('Y-m-d', $b->getCorrectTime()));
