@@ -15,7 +15,7 @@ class Referer {
             $this->cQueryString = '';
         } else {
             $this->cHost = $this->cUrlParam['host']; 
-            $urlquery = explode('&', $this->cUrlParam['query']);
+            $urlquery = isset($this->cUrlParam['query']) ? explode('&', $this->cUrlParam['query']) : array();
             foreach($urlquery as $query) {
                 list($col, $val) = explode('=', $query);
                 $this->cUrlQuery[$col] = urldecode($val);
