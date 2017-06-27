@@ -10,12 +10,12 @@ class Referer {
     function Referer($url) {
         $this->cEncoding = _CHARSET;
         $this->cUrlParam = parse_url($url);
-        if(strtoupper($this->cUrlParam[scheme]) != 'HTTP') {
+        if(strtoupper($this->cUrlParam['scheme']) != 'HTTP') {
             $this->cHost = '';
             $this->cQueryString = '';
         } else {
-            $this->cHost = $this->cUrlParam[host]; 
-            $urlquery = explode('&', $this->cUrlParam[query]);
+            $this->cHost = $this->cUrlParam['host']; 
+            $urlquery = explode('&', $this->cUrlParam['query']);
             foreach($urlquery as $query) {
                 list($col, $val) = explode('=', $query);
                 $this->cUrlQuery[$col] = urldecode($val);
@@ -61,7 +61,7 @@ class Referer {
 
     function yahoo() {
         // $srcenc = $this->cUrlQuery[ei];
-        switch (strtoupper($this->cUrlQuery[ei])) {
+        switch (strtoupper($this->cUrlQuery['ei'])) {
             case 'UTF-8':
             case 'UTF8':
                 $srcenc='UTF-8';
@@ -75,40 +75,40 @@ class Referer {
                 $srcenc='SJIS';
                 break;
             default:
-              $srcenc= ($this->cUrlQuery[ei])?($this->cUrlQuery[ei] . ","):"" . 'EUC-JP, UTF-8, SJIS, JIS, ASCII';
+              $srcenc= ($this->cUrlQuery['ei'])?($this->cUrlQuery['ei'] . ","):"" . 'EUC-JP, UTF-8, SJIS, JIS, ASCII';
         }
 
-        $this->cQueryString = mb_convert_encoding(stripcslashes(preg_replace("/\b\+*(site|link|intitle):\S+/i", "", $this->cUrlQuery[p])), $this->cEncoding, $srcenc);
-        $this->cEngine = "Yahoo!";
+        $this->cQueryString = mb_convert_encoding(stripcslashes(preg_replace("/\b\+*(site|link|intitle):\S+/i", "", $this->cUrlQuery['p'])), $this->cEncoding, $srcenc);
+        $this->cEngine = 'Yahoo!';
     }
 
     function infoseek() {
-        $srcenc = $this->cUrlQuery[enc];
+        $srcenc = $this->cUrlQuery['enc'];
         if (!$srcenc) {
             $srcenc='UTF-8, EUC-JP';
         }
-        $this->cQueryString = mb_convert_encoding($this->cUrlQuery[qt], $this->cEncoding, $srcenc);
+        $this->cQueryString = mb_convert_encoding($this->cUrlQuery['qt'], $this->cEncoding, $srcenc);
         $this->cEngine = "infoseek";
     }
 
     function fresheye() {
-        $this->cQueryString = mb_convert_encoding($this->cUrlQuery[kw], $this->cEncoding, 'EUC-JP, SJIS, UTF-8, JIS, ASCII');
+        $this->cQueryString = mb_convert_encoding($this->cUrlQuery['kw'], $this->cEncoding, 'EUC-JP, SJIS, UTF-8, JIS, ASCII');
         $this->cEngine = "freshEYE";
     }
 
     function goo() {
-        $srcenc = ($this->cUrlQuery[IE])?$this->cUrlQuery[IE]:'UTF-8, EUC-JP, SJIS, JIS';
-        $this->cQueryString = mb_convert_encoding($this->cUrlQuery[MT], $this->cEncoding, $srcenc);
+        $srcenc = ($this->cUrlQuery['IE'])?$this->cUrlQuery['IE']:'UTF-8, EUC-JP, SJIS, JIS';
+        $this->cQueryString = mb_convert_encoding($this->cUrlQuery['MT'], $this->cEncoding, $srcenc);
         $this->cEngine = "goo";
     }
 
     function nifty() {
-        $this->cQueryString = mb_convert_encoding($this->cUrlQuery[Text], $this->cEncoding, 'UTF-8, EUC-JP, JIS, ISO-2022-JP, SJIS, ASCII');
+        $this->cQueryString = mb_convert_encoding($this->cUrlQuery['Text'], $this->cEncoding, 'UTF-8, EUC-JP, JIS, ISO-2022-JP, SJIS, ASCII');
         $this->cEngine = "@nifty";
     }
 
     function netscape() {
-        switch ($this->cUrlQuery[charset]) {
+        switch ($this->cUrlQuery['charset']) {
             case 'EUC-JP':
                 $srcenc='EUC-JP';
                 break;
@@ -118,34 +118,34 @@ class Referer {
             default:
                 $srcenc='EUC-JP';
         }
-        $this->cQueryString = mb_convert_encoding($this->cUrlQuery[search], $this->cEncoding, $srcenc);
+        $this->cQueryString = mb_convert_encoding($this->cUrlQuery['search'], $this->cEncoding, $srcenc);
         $this->cEngine = "Netscape";
     }
 
     function biglobe() {
-        $this->cQueryString = mb_convert_encoding($this->cUrlQuery[q], $this->cEncoding, 'UTF-8, EUC-JP, SJIS, JIS, ASCII');
+        $this->cQueryString = mb_convert_encoding($this->cUrlQuery['q'], $this->cEncoding, 'UTF-8, EUC-JP, SJIS, JIS, ASCII');
         $this->cEngine = "BIGLOBE";
     }
 
     function aol() {
-        $this->cQueryString = mb_convert_encoding($this->cUrlQuery[query], $this->cEncoding, 'UTF-8, SJIS, EUC-JP, JIS, ASCII');
+        $this->cQueryString = mb_convert_encoding($this->cUrlQuery['query'], $this->cEncoding, 'UTF-8, SJIS, EUC-JP, JIS, ASCII');
         $this->cEngine = "AOL";
     }
 
     function naver() {
-        $this->cQueryString = mb_convert_encoding($this->cUrlQuery[query], $this->cEncoding, 'EUC-JP, SJIS, UTF-8, JIS, ASCII');
+        $this->cQueryString = mb_convert_encoding($this->cUrlQuery['query'], $this->cEncoding, 'EUC-JP, SJIS, UTF-8, JIS, ASCII');
         $this->cEngine = "NAVER";
     }
 
     function excite_jp() {
-        $srcenc = ($this->cUrlQuery[charset]);
+        $srcenc = ($this->cUrlQuery['charset']);
         if (!$srcenc) {
             $srcenc='SJIS, UTF-8, EUC-JP, JIS, ASCII';
         }
-        if($this->cUrlQuery[search]) {
-            $q = $this->cUrlQuery[search];
-        } elseif ($this->cUrlQuery[s]) {
-            $q = $this->cUrlQuery[s];
+        if($this->cUrlQuery['search']) {
+            $q = $this->cUrlQuery['search'];
+        } elseif ($this->cUrlQuery['s']) {
+            $q = $this->cUrlQuery['s'];
         } else {
             $q = '';
         }
@@ -154,35 +154,35 @@ class Referer {
     }
 
     function msn() {
-        switch ($this->cUrlQuery[cp]) {
+        switch ($this->cUrlQuery['cp']) {
             case '932':
                 $srcenc='SJIS-win';
                 break;
             default:
                 $srcenc='utf-8';
         }
-        $this->cQueryString = mb_convert_encoding($this->cUrlQuery[q], $this->cEncoding, $srcenc);
+        $this->cQueryString = mb_convert_encoding($this->cUrlQuery['q'], $this->cEncoding, $srcenc);
         $this->cEngine = "msn";
     }
 
     function alltheweb() {
-        switch ($this->cUrlQuery[cs]) {
+        switch ($this->cUrlQuery['cs']) {
             case 'utf-8':
                 $srcenc='UTF-8';
                 break;
             default:
                 $srcenc='EUC-JP, UTF-8, SJIS, JIS, ASCII';
         }
-        $this->cQueryString = mb_convert_encoding($this->cUrlQuery[q], $this->cEncoding, $srcenc);
+        $this->cQueryString = mb_convert_encoding($this->cUrlQuery['q'], $this->cEncoding, $srcenc);
         $this->cEngine = "AlltheWeb";
     }
 
     function google() {
-        if (!($q = $this->cUrlQuery[q])) {
-            $q = $this->cUrlQuery[as_q];
+        if (!($q = $this->cUrlQuery['q'])) {
+            $q = $this->cUrlQuery['as_q'];
         }
         //switch (strtoupper(isset($this->cUrlQuery[ie])?$this->cUrlQuery[ie]:(isset($this->cUrlQuery[oe])?$this->cUrlQuery[oe]:"none"))) {
-        switch (strtoupper($this->cUrlQuery[ie])) {
+        switch (strtoupper($this->cUrlQuery['ie'])) {
             case 'UTF-8':
             case 'UTF8':
                 $srcenc='UTF-8';
@@ -198,7 +198,7 @@ class Referer {
                 $srcenc='SJIS';
                 break;
             default:
-                $srcenc= ($this->cUrlQuery[ie])?($this->cUrlQuery[ie] . ","):"" . 'UTF-8, EUC-JP, SJIS, JIS, ASCII';
+                $srcenc= ($this->cUrlQuery['ie'])?($this->cUrlQuery['ie'] . ","):"" . 'UTF-8, EUC-JP, SJIS, JIS, ASCII';
         }
         if (preg_match("/\b\+*cache:/", $q)) {
             // $srcenc='UTF-8, SJIS, EUC-JP, JIS, ASCII';
@@ -212,7 +212,7 @@ class Referer {
     }
 
     function ask() {
-        $this->cQueryString = mb_convert_encoding($this->cUrlQuery[q], $this->cEncoding, 'UTF-8');
+        $this->cQueryString = mb_convert_encoding($this->cUrlQuery['q'], $this->cEncoding, 'UTF-8');
         $this->cEngine = "Ask.jp";
     }
 
