@@ -7,7 +7,8 @@ class Referer {
     var $cUrlQuery = array();
     var $cQueryString;
 
-    function __construct($url) {
+    function __construct($url='') {
+    	if(!$url) return;
         $this->cEncoding = _CHARSET;
         $this->cUrlParam = parse_url($url);
         if(strtoupper($this->cUrlParam['scheme']) != 'HTTP') {
